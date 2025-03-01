@@ -16,8 +16,8 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        heading: ["Inter", "sans-serif"],
+        sans: ["BLMelody", "sans-serif"],
+        heading: ["BLMelody", "sans-serif"],
         nighty: ["Nighty", "sans-serif"],
         newake: ["Newake", "sans-serif"],
         geist: ["Geist", "sans-serif"],
