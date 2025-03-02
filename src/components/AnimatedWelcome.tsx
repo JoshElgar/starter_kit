@@ -104,7 +104,7 @@ export function AnimatedWelcome() {
     >
       <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl relative transition-all duration-700">
         <span className="relative inline-block overflow-hidden">
-          <div className="flex">
+          <div className="flex p-2">
             {text.split("").map((letter, index) => (
               <span
                 key={index}
