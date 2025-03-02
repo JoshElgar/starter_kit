@@ -59,14 +59,36 @@ const Column: React.FC<ColumnProps> = ({ pills, color, index }) => {
 
 export function AudioVisualizer() {
   const [columns, setColumns] = useState<ColumnProps[]>([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const animationStates = useRef<
     Array<{
       direction: "up" | "down";
       pauseCounter: number;
       currentHeight: number;
-      speed: number; // Different speeds for different columns
+      speed: number;
     }>
   >([]);
+
+  // Track mouse position
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        // Normalize mouse position relative to container (0-1)
+        setMousePosition({
+          x: Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+          y: Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)),
+        });
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   // Initialize columns with random colors
   useEffect(() => {
@@ -79,15 +101,15 @@ export function AudioVisualizer() {
     // Initialize animation states with varied speeds and starting positions
     animationStates.current = Array.from({ length: COLUMNS }, () => ({
       direction: Math.random() > 0.5 ? "up" : "down",
-      pauseCounter: Math.floor(Math.random() * 8), // More varied initial pauses
-      currentHeight: Math.floor(Math.random() * MAX_ACTIVE_PILLS), // Random starting heights
-      speed: Math.random() * 0.5 + 0.5, // Random speed multiplier between 0.5 and 1
+      pauseCounter: Math.floor(Math.random() * 8),
+      currentHeight: Math.floor(Math.random() * MAX_ACTIVE_PILLS),
+      speed: Math.random() * 0.5 + 0.5,
     }));
 
     setColumns(newColumns);
   }, []);
 
-  // Simple up/down animation with pauses
+  // Animation with mouse influence
   useEffect(() => {
     if (columns.length === 0) return;
 
@@ -106,14 +128,27 @@ export function AudioVisualizer() {
           return { ...column, pills: state.currentHeight };
         }
 
+        // Calculate mouse influence
+        // Columns closer to mouse X position get a boost
+        const columnPosition = i / COLUMNS;
+        const distanceFromMouse = Math.abs(columnPosition - mousePosition.x);
+        const mouseInfluence = Math.max(0, 1 - distanceFromMouse * 2);
+
+        // Add a small boost to max height based on mouse proximity
+        const effectiveMaxHeight = Math.min(
+          MAX_ACTIVE_PILLS,
+          MIN_ACTIVE_PILLS +
+            (MAX_ACTIVE_PILLS - MIN_ACTIVE_PILLS) * (1 + mouseInfluence * 0.3)
+        );
+
         // Otherwise, move up or down
         if (state.direction === "up") {
           state.currentHeight++;
 
           // If reached top, change direction and set pause
-          if (state.currentHeight >= MAX_ACTIVE_PILLS) {
+          if (state.currentHeight >= effectiveMaxHeight) {
             state.direction = "down";
-            state.pauseCounter = Math.floor(Math.random() * 3); // Shorter random pause at top
+            state.pauseCounter = Math.floor(Math.random() * 3);
           }
         } else {
           state.currentHeight--;
@@ -121,7 +156,7 @@ export function AudioVisualizer() {
           // If reached bottom, change direction and set pause
           if (state.currentHeight <= MIN_ACTIVE_PILLS) {
             state.direction = "up";
-            state.pauseCounter = Math.floor(Math.random() * 3); // Shorter random pause at bottom
+            state.pauseCounter = Math.floor(Math.random() * 3);
           }
         }
 
@@ -132,13 +167,16 @@ export function AudioVisualizer() {
     // Update at a faster interval
     const interval = setInterval(() => {
       setColumns(updateHeights);
-    }, 80); // Much faster updates
+    }, 80);
 
     return () => clearInterval(interval);
-  }, [columns]);
+  }, [columns, mousePosition]);
 
   return (
-    <div className="w-full h-full flex items-end justify-between px-8">
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-end justify-between px-8"
+    >
       {columns.map((column, index) => (
         <Column
           key={index}
