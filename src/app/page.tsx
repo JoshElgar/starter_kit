@@ -11,6 +11,7 @@ import {
 } from "../components/ui/card";
 import { FontShowcase } from "../components/FontShowcase";
 import { AnimatedWelcome } from "../components/AnimatedWelcome";
+import { AudioVisualizer } from "@/components/AudioVisualizer";
 
 export default function Home() {
   return (
@@ -60,6 +61,14 @@ export default function Home() {
                 <Link href="/broke">Stay broke</Link>
               </Button>
             </div>
+
+            {/* Audio visualizer */}
+            <div className="relative w-screen h-[200px] mt-8 -mx-4 md:-mx-8 lg:-mx-16">
+              <div className="absolute inset-0">
+                <AudioVisualizer />
+              </div>
+            </div>
+
             <div className="mx-auto w-full mt-8">
               <FontShowcase />
             </div>
