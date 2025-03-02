@@ -2,6 +2,8 @@
 
 A minimal starter kit with Next.js, Tailwind CSS, shadcn/ui, and tRPC.
 
+![image](https://github.com/user-attachments/assets/72510020-1fdc-4c40-8d69-f6f4477d77a7)
+
 ## Features
 
 - **Next.js 14**: The React framework for building modern web applications
