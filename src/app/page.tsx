@@ -15,29 +15,31 @@ import { AnimatedWelcome } from "../components/AnimatedWelcome";
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center">
-          <div className="mr-4 flex">
-            <Link href="/" className="mr-6 flex items-center space-x-2">
-              <span className="font-bold">New Project</span>
-            </Link>
-          </div>
-          <nav className="flex flex-1 items-center justify-end space-x-4">
+      <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 rounded-full border bg-background/80 backdrop-blur shadow-sm">
+        <div className="flex h-12 items-center justify-between px-6">
+          <nav className="flex items-center space-x-6">
             <Link
               href="/money"
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary"
+                "text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               )}
             >
-              Money
+              Make money
             </Link>
+          </nav>
+          <div className="flex mx-6">
+            <Link href="/" className="flex items-center space-x-2">
+              <span className="font-bold">New Project</span>
+            </Link>
+          </div>
+          <nav className="flex items-center space-x-6">
             <Link
               href="/broke"
               className={cn(
                 "text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               )}
             >
-              Broke
+              Stay broke
             </Link>
           </nav>
         </div>
