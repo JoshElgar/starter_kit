@@ -10,8 +10,10 @@ interface TextGridProps {
 export default function TextGrid({ className = "" }: TextGridProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [visibleBoxes, setVisibleBoxes] = useState<Set<number>>(new Set());
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [previousIndex, setPreviousIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number>(0); // Start with first item hovered
+  const [activeLayer, setActiveLayer] = useState(1);
+  const [layer1Emoji, setLayer1Emoji] = useState<number>(0); // Initialize with first emoji
+  const [layer2Emoji, setLayer2Emoji] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const boxRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -33,10 +35,31 @@ export default function TextGrid({ className = "" }: TextGridProps) {
 
   // Handle hover changes
   useEffect(() => {
-    if (hoveredIndex !== null && hoveredIndex !== previousIndex) {
-      setPreviousIndex(previousIndex !== null ? previousIndex : null);
+    if (hoveredIndex !== null) {
+      // Update the inactive layer with the new emoji
+      if (activeLayer === 1) {
+        setLayer2Emoji(hoveredIndex);
+        // Then switch the active layer
+        setActiveLayer(2);
+      } else {
+        setLayer1Emoji(hoveredIndex);
+        // Then switch the active layer
+        setActiveLayer(1);
+      }
+    } else {
+      // When nothing is hovered, fade out both layers
+      setLayer1Emoji(0); // Set to first emoji instead of null to avoid type error
+      setLayer2Emoji(null);
     }
-  }, [hoveredIndex, previousIndex]);
+  }, [hoveredIndex]);
+
+  // Initialize with first item hovered
+  useEffect(() => {
+    // Set initial hover state
+    setHoveredIndex(0);
+    setLayer1Emoji(0);
+    setActiveLayer(1);
+  }, []);
 
   // Handle scroll events
   useEffect(() => {
@@ -86,33 +109,27 @@ export default function TextGrid({ className = "" }: TextGridProps) {
 
   // Handle mouse enter
   const handleMouseEnter = (index: number) => {
-    if (hoveredIndex !== index) {
-      setPreviousIndex(hoveredIndex);
-      setHoveredIndex(index);
-    }
+    setHoveredIndex(index);
   };
 
   // Handle mouse leave
   const handleMouseLeave = () => {
-    setPreviousIndex(hoveredIndex);
-    setHoveredIndex(null);
+    setHoveredIndex(0); // Return to first item instead of null
   };
 
   return (
     <div className={`px-2 sm:px-4 ${className} relative`}>
-      {/* Background container */}
+      {/* Background Layer 1 */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundColor: "black",
-          opacity: hoveredIndex !== null || previousIndex !== null ? 1 : 0,
+          opacity: activeLayer === 1 && layer1Emoji !== null ? 1 : 0,
           zIndex: 0,
           transition: "opacity 1.5s ease-in-out",
-          overflow: "hidden",
         }}
       >
-        {/* Current emoji */}
-        {hoveredIndex !== null && (
+        {layer1Emoji !== null && (
           <div
             className="absolute inset-0 flex justify-center items-center"
             style={{
@@ -120,26 +137,34 @@ export default function TextGrid({ className = "" }: TextGridProps) {
               fontSize: "1000px",
               opacity: 0.6,
               transform: "scale(1.5)",
-              transition: "opacity 1.5s ease-in-out",
             }}
           >
-            {textBoxes[hoveredIndex].emoji}
+            {textBoxes[layer1Emoji].emoji}
           </div>
         )}
+      </div>
 
-        {/* Previous emoji (fading out) */}
-        {previousIndex !== null && previousIndex !== hoveredIndex && (
+      {/* Background Layer 2 */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundColor: "black",
+          opacity: activeLayer === 2 && layer2Emoji !== null ? 1 : 0,
+          zIndex: 0,
+          transition: "opacity 1.5s ease-in-out",
+        }}
+      >
+        {layer2Emoji !== null && (
           <div
             className="absolute inset-0 flex justify-center items-center"
             style={{
               filter: "blur(120px)",
               fontSize: "1000px",
-              opacity: hoveredIndex !== null ? 0 : 0.6,
+              opacity: 0.6,
               transform: "scale(1.5)",
-              transition: "opacity 1.5s ease-in-out",
             }}
           >
-            {textBoxes[previousIndex].emoji}
+            {textBoxes[layer2Emoji].emoji}
           </div>
         )}
       </div>
@@ -151,7 +176,7 @@ export default function TextGrid({ className = "" }: TextGridProps) {
       >
         {textBoxes.map((item, index) => {
           // On mobile, show fewer items
-          if (isMobile && index >= 12) {
+          if (isMobile && index >= 30) {
             return null;
           }
 
@@ -166,6 +191,7 @@ export default function TextGrid({ className = "" }: TextGridProps) {
                 border border-white/30 px-1 sm:px-1.5 py-1 sm:py-4 transition-all duration-300 ease-in-out
                 hover:border-white/90 cursor-default flex-grow
                 ${isVisible ? "opacity-100" : "opacity-0"}
+                ${hoveredIndex === index ? "border-white/90" : ""}
                 w-[calc(50%-1px)] sm:w-auto
               `}
               style={{ marginRight: "-1px", marginBottom: "-1px" }}

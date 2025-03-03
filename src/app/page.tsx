@@ -1,13 +1,49 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import PeopleCanvas from "@/components/PeopleCanvas";
 import PlantBoidsCanvas from "@/components/PlantBoidsCanvas";
 import TextGrid from "@/components/TextGrid";
 import { FontShowcase } from "@/components/FontShowcase";
+import SelfDestructSection from "@/components/SelfDestructSection";
+import SecondChanceScreen from "@/components/SecondChanceScreen";
+import { getCookie, setCookie } from "@/utils/cookies";
 
 export default function Home() {
   const buildSectionRef = useRef<HTMLDivElement>(null);
+  const [isSelfDestructed, setIsSelfDestructed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for self-destruct cookie on mount
+  useEffect(() => {
+    const hasDestructed = getCookie("selfDestructed") === "true";
+    if (hasDestructed) {
+      setIsSelfDestructed(true);
+      // Prevent scrolling when self-destructed
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleSelfDestruct = () => {
+    setIsSelfDestructed(true);
+    document.body.style.overflow = "hidden";
+    // Set page to blank
+    document.body.innerHTML = "";
+    document.body.style.backgroundColor = "black";
+
+    // Redirect to Google with search query
+    window.location.href =
+      "https://www.google.com/search?q=Where+can+I+find+a+good+dev+agency?";
+  };
+
+  const handleGiveSecondChance = () => {
+    setIsSelfDestructed(false);
+    document.body.style.overflow = "";
+    setCookie("selfDestructed", "false", 30);
+  };
 
   const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
     if (ref.current) {
@@ -18,6 +54,25 @@ export default function Home() {
     }
   };
 
+  // Show loading state while checking cookies
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex space-x-2">
+          <div className="w-4 h-4 bg-black animate-pulse"></div>
+          <div className="w-4 h-4 bg-black animate-pulse delay-150"></div>
+          <div className="w-4 h-4 bg-black animate-pulse delay-300"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // If the site has self-destructed, show only the second chance screen
+  if (isSelfDestructed) {
+    return <SecondChanceScreen onGiveSecondChance={handleGiveSecondChance} />;
+  }
+
+  // Otherwise, show the regular content
   return (
     <div
       className="flex min-h-screen flex-col relative"
@@ -53,8 +108,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <a
               href="https://cal.com/elgar/30min"
-              className="bg-black text-white font-medium rounded-none px-6 py-3 transition-all duration-300 hover:scale-105 focus:outline-none z-50 inline-block text-center"
-              style={{ fontFamily: "Geist" }}
+              className="bg-black text-white font-medium rounded-none px-6 py-3 transition-all duration-300 hover:scale-105 focus:outline-none z-50 inline-block text-center font-geist"
             >
               Work with us
             </a>
@@ -63,7 +117,7 @@ export default function Home() {
               className="bg-white text-black border border-black font-medium rounded-none px-6 py-3 transition-all duration-300 hover:scale-105 focus:outline-none z-50 inline-block"
               style={{ fontFamily: "Geist" }}
             >
-              See what we can make
+              See what we can build
             </button>
           </div>
         </main>
@@ -84,7 +138,16 @@ export default function Home() {
         </div>
 
         <TextGrid className="z-10" />
+        <p className="text-lg sm:text-xl md:text-2xl font-geist text-center text-white/80 mt-24 px-4">
+          and more.
+        </p>
       </div>
+
+      {/* Self Destruct Section */}
+      <SelfDestructSection
+        className="z-10"
+        onSelfDestruct={handleSelfDestruct}
+      />
     </div>
   );
 }
