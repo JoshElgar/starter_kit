@@ -3,9 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "New project",
-  description:
-    "A minimal starter kit with Next.js, Tailwind CSS, shadcn/ui, and tRPC",
+  title: "Website",
+  description: "Personal website.",
 };
 
 export default function RootLayout({
